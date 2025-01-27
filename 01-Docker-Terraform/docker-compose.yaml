@@ -1,0 +1,69 @@
+services:
+  pgdatabase:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=root 
+      - POSTGRES_PASSWORD=root 
+      - POSTGRES_DB=ny_taxi 
+    volumes:
+      - "/c/Users/MyBook Hype AMD/Documents/Programming/Data Engineering/Project Latihan/ny_taxi_postgres_data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com 
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8080:80"
+
+  ingest_yellow_taxi_data:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - pgdatabase
+    environment:
+      POSTGRES_USER : root 
+      POSTGRES_PASSWORD : root 
+      POSTGRES_DB : ny_taxi
+      POSTGRES_HOSTNAME : pgdatabase
+      POSTGRES_PORT : 5432
+    volumes:
+      - "./:/app"
+    command: >
+        --user=root
+        --password=root
+        --host=pgdatabase
+        --port=5432 
+        --db=ny_taxi 
+        --tb=yellow_taxi_data 
+        --url="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet"
+
+  ingest_taxi_zone_data:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - pgdatabase
+    environment:
+      POSTGRES_USER : root 
+      POSTGRES_PASSWORD : root 
+      POSTGRES_DB : ny_taxi
+      POSTGRES_HOSTNAME : pgdatabase
+      POSTGRES_PORT : 5432
+    volumes:
+      - "./:/app"
+    command: >
+        --user=root
+        --password=root
+        --host=pgdatabase
+        --port=5432 
+        --db=ny_taxi 
+        --tb=zones
+        --url="https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
+    
+    
+
+  
